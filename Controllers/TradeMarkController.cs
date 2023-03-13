@@ -7,27 +7,25 @@ namespace Registration_asp_react.Controllers;
 [Route("[controller]")]
 public class TradeMarkController : ControllerBase
 {
-    private static readonly List<string> _listTradeMark=new()
-    {
-        "asaf","asaf2","asaf3"
-    };
+    private static readonly List<string> ListTradeMark=new();
     private readonly ILogger<TradeMarkController> _logger;
 
     public TradeMarkController(ILogger<TradeMarkController> logger)
     {
         _logger = logger;
     }
-    
+
+    // private static readonly List<string> AlreadyChecked =
+    //     ListTradeMark.ConvertAll((input => RemoveStringReader(input).ToLower()));
+
     private static string RemoveStringReader(string input)
     {
         var s = new StringBuilder(input.Length); // (input.Length);
         using (var reader = new StringReader(input))
         {
-            var i = 0;
-            char c;
-            for (; i < input.Length; i++)
+            for (var i = 0; i < input.Length; i++)
             {
-                c = (char)reader.Read();
+                var c = (char)reader.Read();
                 if (!char.IsWhiteSpace(c))
                 {
                     s.Append(c);
@@ -38,16 +36,22 @@ public class TradeMarkController : ControllerBase
         return s.ToString();
     }
 
+    
+    
+    
     [HttpGet("registration")]
-    public async Task<IActionResult> Registration(string name)
+    public Task<IActionResult> Registration(string name)
     {
         var newName = RemoveStringReader(name);
-        if (_listTradeMark.Contains(newName))
+        foreach (var item in ListTradeMark)
         {
-            return BadRequest(new { message = "Error" });
+            if (string.Equals(newName, RemoveStringReader(item), StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.FromResult<IActionResult>(BadRequest(new { message = "Error" }));
+            }
         }
-        _listTradeMark.Add(newName);
-        return Ok();
+        ListTradeMark.Add(name);
+        return Task.FromResult<IActionResult>(Ok());
     }
 
 
@@ -55,10 +59,10 @@ public class TradeMarkController : ControllerBase
     
     public List<string> ListMark()
     {
-        return _listTradeMark;
+        return ListTradeMark;
     }
 }
-        
+//ListTradeMark.Contains(newName)
     
 
 
