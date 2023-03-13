@@ -7,7 +7,10 @@ namespace Registration_asp_react.Controllers;
 [Route("[controller]")]
 public class TradeMarkController : ControllerBase
 {
-    private static readonly List<string> ListTradeMark=new();
+    private static readonly List<string> ListTradeMark = new(); 
+    // Count 1.000.000
+    // Ближе к 1.000.000 = O(n)
+    // Ближе к 1 трлн = O(n^2)
     private readonly ILogger<TradeMarkController> _logger;
 
     public TradeMarkController(ILogger<TradeMarkController> logger)
@@ -32,7 +35,6 @@ public class TradeMarkController : ControllerBase
                 }
             }
         }
-
         return s.ToString();
     }
 
@@ -40,15 +42,22 @@ public class TradeMarkController : ControllerBase
     
     
     [HttpGet("registration")]
-    public Task<IActionResult> Registration(string name)
+    // n = 1.000.000 (кол-во тов. знаков), k - среднее кол символов в название
+    public Task<IActionResult> Register(string name)
     {
-        var newName = RemoveStringReader(name);
-        foreach (var item in ListTradeMark)
+        var registrant = RemoveStringReader(name);
+
+        bool IsDuplicated(string newTrademark) // O(k), 10 op., O(k), k = ~10
         {
-            if (string.Equals(newName, RemoveStringReader(item), StringComparison.OrdinalIgnoreCase))
-            {
-                return Task.FromResult<IActionResult>(BadRequest(new { message = "Error" }));
-            }
+            // n = newTrademark.Length (~10)
+            var normalizedTrademark = RemoveStringReader(newTrademark);// O(k), 10 op.
+            // O(k), 10 op
+            return string.Equals(normalizedTrademark, registrant, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (ListTradeMark.Exists(IsDuplicated))// k=10 // n раз выполняет k операций O(n * k)
+        {
+            return Task.FromResult<IActionResult>(BadRequest(new { message = "Error" }));
         }
         ListTradeMark.Add(name);
         return Task.FromResult<IActionResult>(Ok());
@@ -56,13 +65,12 @@ public class TradeMarkController : ControllerBase
 
 
     [HttpGet("list")]
-    
     public List<string> ListMark()
     {
         return ListTradeMark;
     }
 }
-//ListTradeMark.Contains(newName)
+
     
 
 
